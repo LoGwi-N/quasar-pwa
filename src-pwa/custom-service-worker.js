@@ -9,6 +9,7 @@
 import { clientsClaim } from 'workbox-core'
 import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching'
 import { registerRoute, NavigationRoute } from 'workbox-routing'
+import {StaleWhileRevalidate} from "workbox-strategies";
 
 self.skipWaiting()
 clientsClaim()
@@ -25,6 +26,23 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
     new NavigationRoute(
       createHandlerBoundToURL(process.env.PWA_FALLBACK_HTML),
       { denylist: [/sw\.js$/, /workbox-(.)*\.js$/] }
-    )
+    ),
+    new StaleWhileRevalidate()
   )
 }
+
+self.addEventListener('push', event => {
+  const data = event.data.json();
+  console.log(data)
+  console.log(event)
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body
+    })
+  );
+});
+
+self.addEventListener('notificationclick', function(event) {
+  console.log('notificationclick', event);
+  console.log('notificationclick json', event?.data?.json());
+});

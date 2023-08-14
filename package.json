@@ -14,7 +14,9 @@
     "build": "quasar build",
     "build:pwa": "quasar build -m pwa",
     "build:pwa:pages": "npx quasar build -m pwa",
-    "deploy": "push-dir --dir=dist/pwa --remote=quasar-pwa --branch=master"
+    "deploy": "push-dir --dir=dist/pwa --remote=quasar-pwa --branch=master",
+    "surge:pwa": "surge /Users/a1/PhpstormProjects/quasar-pwa/dist/pwa",
+    "build-deploy": "quasar build -m pwa && surge /Users/a1/PhpstormProjects/quasar-pwa/dist/pwa"
   },
   "dependencies": {
     "@quasar/extras": "^1.16.4",

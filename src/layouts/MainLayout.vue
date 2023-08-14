@@ -39,14 +39,23 @@
       </q-list>
     </q-drawer>
 
-    <q-page-container>
+    <q-page-container class="text-center">
+      <q-btn v-if="!pwaIsInstalled" @click="installApp" label="install" name="install" icon="install_mobile" class="icon-size q-mt-lg"/>
+
+      <div v-if="wsData" class="q-px-xl q-mt-md">
+        <div>Data from WS</div>
+        <pre class="text-left">{{ wsData }}</pre>
+      </div>
+
+
       <router-view />
+
     </q-page-container>
   </q-layout>
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import {computed, defineComponent, onMounted, ref} from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
 
 const linksList = [
@@ -102,14 +111,81 @@ export default defineComponent({
   },
 
   setup () {
+    const wsData = ref(null)
     const leftDrawerOpen = ref(false)
+    const deferredPrompt = ref(null)
+
+    const browserType = () => {
+      const userAgent = navigator.userAgent
+      let browserName
+
+      // https://codepedia.info/detect-browser-in-javascript#:~:text=To%20detect%20user%20browser%20information,to%20identify%20the%20user%20browser.&text=Now%20call%20this%20JS%20function,browser%20name%20on%20page%20load.
+      if (userAgent.match(/chrome|chromium|crios/i)) {
+        browserName = 'chrome'
+      } else if (userAgent.match(/firefox|fxios/i)) {
+        browserName = 'firefox'
+      } else if (userAgent.match(/safari/i)) {
+        browserName = 'safari'
+      } else if (userAgent.match(/opr\//i)) {
+        browserName = 'opera'
+      } else if (userAgent.match(/edg/i)) {
+        browserName = 'edge'
+      } else {
+        browserName = 'No browser detection'
+      }
+
+      return browserName
+    }
+
+    onMounted(async () => {
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault()
+        deferredPrompt.value = e
+      })
+
+      window.addEventListener('message', e => {
+        if (e.data?.type === 'ws') {
+          wsData.value = e.data?.data
+        }
+      })
+
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        registration.addEventListener("updatefound", () => {
+          console.log("Service Worker update found!");
+        });
+      }
+    })
+
+    const installApp = async () => {
+      if (!deferredPrompt.value) {
+        return alert('deferredPrompt is null')
+      }
+      deferredPrompt.value.prompt()
+      const { outcome } = await deferredPrompt.value.userChoice
+
+      if (outcome === 'dismissed') {
+        console.log(`User response to the install prompt: ${outcome}`)
+        deferredPrompt.value = null
+        return ''
+      }
+    }
+
+    const pwaIsInstalled = computed(() => {
+      return window.matchMedia('(display-mode: standalone)').matches;
+    })
 
     return {
       essentialLinks: linksList,
       leftDrawerOpen,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
-      }
+      },
+      browserType,
+      deferredPrompt,
+      pwaIsInstalled,
+      installApp,
+      wsData
     }
   }
 })
