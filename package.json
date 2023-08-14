@@ -13,7 +13,8 @@
     "dev:pwa": "quasar dev -m pwa",
     "build": "quasar build",
     "build:pwa": "quasar build -m pwa",
-    "build:pwa:pages": "npx quasar build -m pwa"
+    "build:pwa:pages": "npx quasar build -m pwa",
+    "deploy": "push-dir --dir=dist/pwa --remote=gh-pages --branch=master"
   },
   "dependencies": {
     "@quasar/extras": "^1.16.4",
@@ -29,6 +30,7 @@
     "eslint-plugin-vue": "^9.0.0",
     "postcss": "^8.4.14",
     "prettier": "^2.5.1",
+    "push-dir": "^0.4.1",
     "workbox-build": "^6.5.0",
     "workbox-cacheable-response": "^6.5.0",
     "workbox-core": "^6.5.0",
