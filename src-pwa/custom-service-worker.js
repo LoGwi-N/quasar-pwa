@@ -36,9 +36,7 @@ self.addEventListener('push', event => {
   console.log(data)
   console.log(event)
   event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body
-    })
+    self.registration.showNotification(data.title, data)
   );
 });
 
